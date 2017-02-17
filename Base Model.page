@@ -1,0 +1,120 @@
+---
+format: Markdown
+title: A Base Model
+toc: false
+...
+
+- Our meta-model is quite simple and under-constrained. On purpose. We will not use this meta-model now for general modeling (where it would be useful to constrain it further, to help users create meaningful models).  Instead, we will use it to build a large reference models, containing all the pieces we might consider using in a rural train station. 
+
+- We will subsequently obtain actual train stations from this model by pruning different parts, depending on the selection of features.
+
+- First recall our meta-model:
+
+```clafer
+abstract Track
+    incident -> Track 0..3
+        [ parent in this.incident ]
+    [ no (this & incident) ]
+
+abstract SimpleTrack :Track
+   [ #incident = 2 ]
+
+abstract Junction: Track
+   [ #incident = 3 ]
+
+abstract Line :Track
+   [ one incident ]
+
+abstract TrackBarrier :Track
+   [ one incident ]
+```
+
+- We want to build a base model that looks roughly as follows (The figure presents an intuitive drawing of the base model in an informal domain specific syntax):
+
+![An informal base model containing all stations that we want to consider](/base-model.png)
+
+- The following is a Clafer model that corresponds to a UML **instance specification** (so clafers here should be thought of as objects, not classes).
+
+- The base model instantiates up to two regular (main) tracks (`T1`, `T2`), a parking track (`P`), which is meant to be blind so it is accompanied by a barrier instance (`B`), three junctions (`J1`,`J2`,`J3`) and up to four incoming and outgoing lines (`I1`,`I2`, `O1`, `O2`).  
+
+- Skim the model first ignoring the constraints.  Observe that some elements are **mandatory** (common to all stations) and some are **optional** (variability in the implementation model). We will discuss the details below:
+
+```clafer
+// base model
+bm  
+   T1 :SimpleTrack 1
+   T2 :SimpleTrack ?
+
+   P :SimpleTrack ?
+       [ B in incident ]
+       [ J3 in incident ]
+   B :TrackBarrier ?
+   [ P <=> B ]
+   [ P <=> J3 ]
+   
+   J1 :Junction ?
+      [ T1 ++ T2 in incident ]
+   J2 :Junction ?
+      [ incident = T1 ++ T2 ++ O1 ]
+   J3 :Junction ?
+      [ I1 in incident ]
+
+
+   I1 :Line
+   I2 :Line ?
+      [ T2 in incident ]
+   O1 :Line
+   O2 :Line ?
+      [ T2 in incident ]
+
+   // Specify linking of junctions on the incoming side
+   [ some J1 && some J3 <=> some J1 & J3.incident ] 
+   [ no J1   && some J3 <=> some J3 & T1.incident ] 
+   [ some J1 && no J3   <=> some J1 & I1.incident ]
+   [ no J1   && no J3   <=> some I1 & T1.incident ]
+
+   // Now the same for the other connection
+   [ no J2 <=> O1 in T1.incident ]
+```
+
+- Each station model derivable from this base, will contain one main track (`T1`), one incoming track (`I1`) and one outgoing track (`O1`).  The remaining elements are optional.
+
+- If a derived model should contain a parking track (`P`) then it will also contain a barrier (`B`) terminating it, and a junction (`J3`) connecting it to the main track line.  
+
+- The junction `J3` must  be connected to the parking track `P` but its remaining connections depend on the existence of the second track (and thus the junction `J1`).
+
+- The junction `J1` is used to connect the incoming track to the main tracks `T1` and `T2`, presumably in the cases where we have single incoming line, but dual main tracks.  Junction `J2` does the same on the outgoing side. Except that for `J2` we precisely know all connections, while `J1` will be connected to `I1` or `J3` depending on the existance of `J3`. It is useful to make a drawing, or to study the one above, to understand the junction constraints for `J1` and `J3`.
+
+- Lines `I2` and `O2` will always be connected to `T2` if they exist (recall that in our feature model we required that when we have a dual incoming/outgoing line then we always have two main tracks, thus we can always connect these directly).
+
+- Open the model in Clafer IDE and investigate the first admitted instance. 
+
+```{.clafer .ide}
+```
+
+**Task 7**
+
+- Add a constraint in the model to create a simple dual-track pass-through station, with two lines coming in and out onto two main tracks with no junctions, and no parking. Ask the instance generator to synthesize the instance and inspect the result. 
+
+![A simple dual track pass-through station: DR Byen Metro station next to IT University of Copenhagen](/drbyen.jpg)
+
+**Task 8**
+
+- Is it possible to constraint the above base model to create a blind single-track station (like the one in Rabka shown before)? How? or why not?
+
+What we just created -- a model containing implementations of all variations possible -- is called a **base model** in the CVL specification [CVL], or a **superimposed** **variability model** [KCMA]; it is also commonly called know a **150% model**, for unknown reasons ...  With this super simple DSL we can move to creating the ![next](/next.png) [Mapping Model]()
+
+<hr>
+**Previous**
+<hr>
+
+Part I
+
+1. [Commonality]()
+2. [Variability]()
+3. [Do not Repeat Yourself]()
+4. [Domain Constraints]()
+
+Part II
+
+5. [Station Building Blocks]()

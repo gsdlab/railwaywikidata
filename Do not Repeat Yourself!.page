@@ -1,0 +1,31 @@
+Observe that in the model on the previous page, three clafers (`main_tracks`, `tracks_in`, `tracks_out`) have identical properties (children) and identical constraints.  This redundancy is irritating. Real variability models need reuse mechanisms as any other large models.  In Clafer we use inheritance to reuse similar units of variability (inheritance was not present in the original FODA feature models):
+
+```clafer
+abstract xor trackLine
+    single
+    dual
+
+abstract RegionalStationConf
+    main_tracks :trackLine
+    tracks_in  :trackLine
+    tracks_out :trackLine
+    parking_track ?
+
+MyConfiguration : RegionalStationConf
+```
+
+This also illustrates why it is useful to mix class modeling constructs with feature modeling constructs.  Feature modeling benefits from the reuse methods of OO-modeling, while class modeling benefits obtaining a very concise notation for configuration models / feature models.
+
+Let's use `ClaferConfigurator` again to quickly check whether we get the same instances (to properly check this, using this tool, you need to investigate all 16 instances).
+
+```{.clafer .config}
+```
+
+Close the configurator and move to the page ![next](/next.png) [Domain Constraints]().
+
+<hr>
+**Previous**
+<hr>
+
+1. [Commonality]()
+2. [Variability]()

@@ -1,0 +1,145 @@
+---
+format: Markdown
+title: A Mapping Model
+toc: false
+...
+
+- In practice there are many tools that incorporate variability in the base language, the most common being C/C++ preprocessor, used to implement highly configurable systems such as the Linux Kernel (**amalgamated variability**).  In general some form of amalgamation is hard to avoid if you want to provide easy manipulation of a base model with variability using concrete syntax.
+
+- We will now relate our feature model and our base model together building a middle layer, a so called **mapping model**. Building this model gives us only loose coupling between the implementation language and the feature model.  Variability is kept out of the DSL (so called **separate variability**).  The idea of keeping variability outside the base model has been popularized by [CVL], and it is also used in other methods such as [DeltaModeling]. 
+
+- We begin by recalling our feature model:
+
+```clafer
+abstract xor trackLine
+    single
+    dual
+
+abstract RegionalStationConf
+    main_tracks :trackLine
+    tracks_in  :trackLine
+      [ dual => main_tracks.dual ]
+    tracks_out :trackLine
+      [ dual => main_tracks.dual ]
+    parking_track ?
+```
+- We instantiate it once (to get one configuration):
+
+```clafer
+cnf: RegionalStationConf
+```
+
+- Our base meta-model:
+
+```clafer
+abstract Track
+    incident -> Track 0..3
+        [ parent in this.incident ]
+    [ no (this & incident) ]
+
+abstract SimpleTrack :Track
+   [ #incident = 2 ]
+
+abstract Junction: Track
+   [ #incident = 3 ]
+
+abstract Line :Track
+   [ one incident ]
+
+abstract TrackBarrier :Track
+   [ one incident ]
+```
+
+- Our base model:
+
+```clafer
+bm 
+   T1 :SimpleTrack 1
+   T2 :SimpleTrack ?
+
+   P :SimpleTrack ?
+       [ B in incident ]
+       [ J3 in incident ]
+   B :TrackBarrier ?
+   [ P <=> B  ]
+   [ P <=> J3 ]
+
+   J1 :Junction ?
+      [ T1 ++ T2 in incident ]
+   J2 :Junction ?
+      [ incident = T1 ++ T2 ++ O1 ]
+   J3 :Junction ?
+      [ I1 in incident ]
+
+   [ some J1 && some J3 <=> some J1 & J3.incident ] 
+   [ no J1   && some J3 <=> some J3 & T1.incident ] 
+   [ some J1 && no J3   <=> some J1 & I1.incident ]
+   [ no J1   && no J3   <=> some I1 & T1.incident ]
+
+   [ no J2 <=> O1 in T1.incident ]
+
+   I1 :Line
+   I2 :Line ?
+      [ T2 in incident ]
+   O1 :Line
+   O2 :Line ?
+      [ T2 in incident ]
+
+```
+- Now we just need to link the feature model with the base model.   For each optional instance of the base model we will write a condition when it is present, a so called **presence condition**.  This is very similar to use of C/C++ **preprocessor** where you write a presence condition for a line of code. 
+
+- We write the mapping constraints at the top level, so they are enforced always (universal context):
+
+```clafer
+[ bm.I2 <=> cnf.tracks_in.dual   ]
+[ bm.O2 <=> cnf.tracks_out.dual  ]
+[ bm.T2 <=> cnf.main_tracks.dual ]
+[ bm.P  <=> cnf.parking_track    ]
+[ bm.J1 <=> cnf.main_tracks.dual && cnf.tracks_in.single  ]
+[ bm.J2 <=> cnf.main_tracks.dual && cnf.tracks_out.single ]
+
+```
+
+- We do not need to specify presence conditions for links, because of the way we have set up the base model: the base model constraints set up the links appropriately, depending on which base model elements are present.  In general, in some other domains it might be necessary to make links dependent on the feature configuration as well.
+
+- Note that in general a mapping model can be much more complex, for instance a **transformation** written in a transformation language (a generator, a M2M Tx, etc).
+
+**Task 9**
+
+- Let's use Clafer IDE to explore this model a bit.  Load it using the button below, and run the Alloy instance generator, asking for a few instances.  Observe, whether the selected configurations (instances of fm) and implementations (instances of bm) agree.
+
+```{.clafer .ide}
+```
+
+**Task 10**
+
+- Now try a more directed exploration: build a dual track pass-through station (like DR Byen in Copenhagen) by adding suitable constraints to the `cnf` specification.  Ask the instance generator to generate a model of this station.
+
+**Task 11**
+
+- Ask for a station with dual main tracks, dual incoming tracks, a single outgoing track and a parking track (use constraints on `cnf`, to  synthesize the implementation).  This case reveals a weakness of the design.  The parking track is not easy to reach from the second incoming line
+
+**Task 12 (extra)**
+
+- If you are brave introduce a fourth junction to the base model (J4) and replace the barrier (B) with it, to make the parking track connected to the main tracks both before and after the station.  This will improve moving of carriages to the parking station.  This task requires rethinking the linking constraints on the outgoing side of the station.  Once you are done derive the implementation for the same configuration to see whether a simpler station design is obtained.
+
+Model (instance) synthesis is a powerful tool that allows to explore multiple designs. So far we did not really use synthesis, as we precisely specified ("programmed") which elements should be present in which configuration.  However in a solver supported language, we can investigate designs without specifying them in so much detail.  We explore this  possibility in the last part of the tutorial. Move to ![next](/next.png) Part IV [Meta-model for Synthesis]()
+
+<hr>
+**Previous**
+<hr>
+
+Part I
+
+1. [Commonality]()
+2. [Variability]()
+3. [Do not Repeat Yourself]()
+4. [Domain Constraints]()
+
+Part II
+
+5. [Station Building Blocks]()
+
+Part III
+
+6. [Base Model]()

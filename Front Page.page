@@ -1,0 +1,86 @@
+---
+format: Markdown
+title: Variability Domain Engineering in Three Layers.  A Train Station Layout Case Study in Clafer.
+toc: false
+...
+by Andrzej Wąsowski [wasowski@itu.dk](mailto:wasowski@itu.dk), [http://www.itu.dk/people/wasowski](http://www.itu.dk/people/wasowski)
+
+Presented at [Domain-Specific Modeling Theory and Practice Summer School 2015](http://msdl.cs.mcgill.ca/conferences/dsm-tp-2015), Antwerp, Belgium, August 2015.
+
+# Introduction
+
+In this wiki, we are gradually building a variability model of small railway stations.
+
+[ ![Clafer logo](http://t3-necsis.cs.uwaterloo.ca:8091/img/logo.png) ](http://clafer.org)
+
+We explain the modeling language and the supporting tools along the way.
+
+
+
+You can always return to this front page by clicking on the traffic lights logo in the top-left corner.
+
+Part 0: Introduction to Domain Engineering
+------------------------------------------
+The tutorial has four parts.   We first develop an extremely simple variability model (a high level domain model).  This simple model describes discrete properties (features) of small regional train stations. Then we develop an implementation level domain model, a simple DSL for describing track layouts. In the third part, we connect the high level variability model to the implementation level domain model, mapping features to implementation.  This demonstrates the key architecture of domain engineering.  We will be able to use the feature model configuration to construct train stations.  Finally, we use reasoning support in Clafer, to realize the domain differently: not by transforming the implementation model, but by synthesizing it (model synthesis).
+
+The first three parts of the tutorial construct a layared variability model following the architecture of Common Variability Language [CVL]:
+
+![](/layers.png)
+
+The top layer is developed in Part I, the bottom layer in Part II and begining of Part III.  The final section of Part III develops the mapping model (the middle layer).
+
+The fourth part uses the same architecture slightly differently.  The realization layer is underspecified, and the solver is used to synthesize the realizations.
+
+Part I: Feature Modeling in Clafer
+----------------------------------
+
+We start by building a feature model describing properties of small train stations.
+
+1. [Commonality]()
+2. [Variability]()
+3. [Do not Repeat Yourself]() 
+4. [Domain Constraints]() 
+
+Part II: A DSL for Describing Track Layouts
+-------------------------------------------
+
+In this part, we focus on modeling domain concepts used in the control software of a traffic lights system.  We are specifically brief here, as meta-modeling is covered by other speakers in DSM-TP.
+
+1. [Station Building Blocks]()
+
+Part III: A Layered Variability Model
+-------------------------------------
+
+In this part, we focus on configuring a particular deployment of our traffic lights system
+
+1. A [Base Model]()
+2. A [Mapping Model]()
+
+
+Part IV: Domain Exploration using Synthesis
+-------------------------------------------
+
+1. [Meta-model for Synthesis]()
+2. [Connect the feature model]()
+
+A natural extension of this work is to consider specification of interlocking of tracks and junctions that guarantee safe passage of trains. Andreas Svendsen writes a bit about this in his thesis (based on CVL).  Inter-locking specification and validation should be possible with Clafer standard tools (but would require a more sophisticated tutorial).  Another work that considers safety of interlocking and variability is presented by Fantechi [Fantechi].
+
+References
+----------
+[MA] Michał Antkiewicz. ["Traffic Lights" Domain Model Example](http://t3-necsis.cs.uwaterloo.ca:8098/), 2014, presented at DSM-TP 2014 (some aspects of Clafer presentation are reused from that tutorial; The tutorial focuses in detail on eliciting requirements from the Traffic Light domains, what corresponds to our Part I.  It is a great tutorial for self study to understand feature modeling better).
+
+[KBKCAW] Kacper Bak, Krzysztof Czarnecki, Andrzej Wasowski: Feature and Meta-Models in Clafer: Mixed, Specialized, and Coupled. SLE 2010: 102-122 (The original paper introducing the Clafer modeling language, presents a similar case study, with a three layered variability model, in the automative domain.)
+
+[AS] Andreas Svendsen. *Analysis, Synthesis and Application of Variability on Domain-Specific Models*, PhD Dissertation, University of Oslo, January 2012. (the main idea of modeling regional train stations, and their main properties come from there; originally from an industrial project with ABB Norway).
+
+[FireAlarm] Thorsten Berger, Stefan Stanciulescu, Ommund Øgård, Øystein Haugen, Bo Larsen, Andrzej Wasowski: To connect or not to connect: experiences from modeling topological variability. SPLC 2014: 330-339 (This paper presents a domain model for fire alarm system topologies. It inspired the ways I have modeled the base meta-model of railway stations in this tutorial.)
+
+[FODA] KC Kang, SG Cohen, JA Hess, WE Novak, AS Peterson. *Feature-oriented domain analysis (FODA) feasibility study* Technical Report, Carnegie-Mellon University, Pittsburgh PA. Software Engineering Institute, 1990 (this is the seminal work that introduced feature-oriented domain analysis, and a graphical notation for feature models; it had big influence on Clafer's textual syntax).
+
+[CVL] CVL submitters. *Common Variability Language, OMG revised submission*. OMG document: ad/2012-08-05, 2012.
+
+[KCMA] Krzysztof Czarnecki, Michal Antkiewicz. *Mapping Features to Models: A Template Approach Based on Superimposed Variants.* GPCE 2005: 422-437 (introduces the idea of base model configured by a feature model; demonstrates it on UML diagrams)
+
+[DeltaModeling] Ina Schaefer: Variability Modelling for Model-Driven Development of Software Product Lines. VaMoS 2010: 85-92
+
+[Fantechi] Alessandro Fantechi: Topologically configurable systems as product families. SPLC 2013: 151-156

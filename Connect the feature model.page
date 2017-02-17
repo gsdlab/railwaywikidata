@@ -1,0 +1,115 @@
+- Recall the feature model and meta-model:
+
+```clafer
+abstract xor trackLine
+    single
+    dual
+
+abstract RegionalStationConf
+    main_tracks :trackLine
+    tracks_in  :trackLine
+    tracks_out :trackLine
+    parking_track ?
+
+abstract Track
+    incident -> Track 0..3
+        [ parent in this.incident ]
+    [ no (this & incident) ]
+
+abstract SimpleTrack :Track
+    [ #incident = 2 ]
+
+abstract Junction: Track
+    [ #incident = 3 ]
+
+abstract Line :Track
+    [ one incident ]
+
+abstract TrackBarrier :Track
+    [ one incident ]
+
+abstract Station
+    T :SimpleTrack 1..3
+        [lone (incident & I) ] // a track should not connect more than one inputs
+        [lone (incident & O) ] // (outputs)
+    J :Junction 0..4
+    I :Line 1..2
+    O :Line 1..2
+
+    B :TrackBarrier 0..2
+
+    // a station must be self contained 
+
+    [ T.incident in T ++ J ++ I ++ O ++ B ]
+    [ J.incident in T ++ J ++ I ++ O ]
+    [ I.incident in T ++ J ]
+    [ O.incident in T ++ J ]
+    [ B.incident in T ]
+
+
+```
+
+- Like in Part III, we now build a mapping model, but we are not so precise with presence conditions. Instead we specify general properties:
+
+
+```clafer
+abstract MappingModel
+   cnf :RegionalStationConf
+   bm  :Station         
+
+   [ main_tracks.single && no cnf.parking_track <=> one bm.T       ]
+   [ main_tracks.single && cnf.parking_track => #bm.T = 2          ]
+   [ cnf.main_tracks.dual && no   cnf.parking_track  => #bm.T = 2 ]
+   [ cnf.main_tracks.dual && some cnf.parking_track <=> #bm.T = 3 ]
+
+   [ cnf.tracks_in.dual  <=> #bm.I = 2 ]
+   [ cnf.tracks_out.dual <=> #bm.O = 2 ]
+
+```
+
+- Let's instantiate a station. 
+
+```clafer
+MappedStation :MappingModel
+```
+**Task 15**
+- Investigate some legal stations in Clafer IDE. Stop at the first instance that is 'weird' (it should not take more than three instances):
+
+```{.clafer .ide}
+```
+
+**Task 16**
+
+- Likely the first instance synthesized with this mapping model has to sequentially connected straight tracks (otherwise convince yourself that such an instance is feasible).  In our rural stations we do not want to have consecutively connected straight tracks (they do not make sense in small stations).  Add a constraint forbidding that to the `MappingModel` and see what other instances are synthesized then. Note that we do not want to add this constraint to the meta-model, as this would forbid larger stations to be created with this meta-model.
+
+Notice that with these more relaxed meta-model we can now create stations that mixed dual and single tracks (the corresponding constraints have been dropped from the feature model).
+
+**Task 17**
+
+- Modify the model to admit blind stations (so it must be possible to have no outgoing tracks both in the feature model and in the solution space model). Synthesize the station in Rabka, by selecting the right feature model configuration using constraints in Clafer IDE.
+
+The tutorial is completed. You can go back to the front page by clicking the logo in the top left corner.
+
+<hr>
+**Previous**
+<hr>
+
+Part I
+
+1. [Commonality]()
+2. [Variability]()
+3. [Do not Repeat Yourself]()
+4. [Domain Constraints]()
+
+Part II
+
+1. [Station Building Blocks]()
+
+Part III
+
+1. A [Base Model]()
+2. A [Mapping Model]()
+
+Part IV
+
+1. [Meta-model for Synthesis]()

@@ -1,0 +1,103 @@
+- In order to implement a product line of train station we need a way to represent the **solution space**. 
+
+- In many system the solution space is represented as code in some existing **programming language**.  In the train station domain, and in the context of the DSM-TP summer school, it seems more appropriate to consider a small **DSL** that will describe train station designs.
+
+- We will use the same language (Clafer) to design a simple, under-constrained, **meta-model** for railway station track design. 
+
+- Now it is more useful to think about **clafers as classes**, than as features; although obviously nothing changes from the language perspective, they remain just clafers.
+
+- The track layout will be built of elements of type `Track`:
+
+```clafer
+abstract Track
+    incident -> Track 0..3
+        [ parent in this.incident ] // incidence is symmetric
+    [ no (this & incident) ] // do not connect to yourself
+```
+
+- Each `Track` will have a set of pointers to `incident` tracks.  The arrow represents a **reference** to a set (a uni-directional association).  The cardinality constraint as previously constraints the amount of incident clafers, so it carries also to the referenced set.
+
+- For the first time, we see cardinalities higher than one.  In our models we will consider tracks that can connect to up to three other tracks.
+
+- We have two constraints.  The first one assumes that the incidence relation is symmetric: so if track A is incident to a track B, then also track B is incident to A. It is written here using the `parent` keyword which refers to the parent of the context (so an instance of the track), as opposed to `this` which refers to the context clafer.  
+
+- The use of `this` here implicitly follows the reference for convenience.  The fully desugared constraint could also be written as `this.parent in this.dref.incident.dref`.
+
+- The second constraint is written in the context of the root clafer, and it states that a track cannot be incident with itself. Here `&` is the **set intersection** operator. Again the reference from incident is followed automatically, so the parenthesized expression means `(this & incident.dref)`.
+
+- In Clafer, like in Alloy, expressions are **set** **valued**, so an instance expression represents a set of instances (possibly empty, possibly singleton, but perhaps larger).  
+
+- The keyword `this` actually represents a **singleton set** containing the context instance, while `incident.dref` represents a set of incident tracks.  This is why it makes sense to compute an intersection of the two.  
+
+- The **quantifier** `no` turns a set into a Boolean value, true if the following set is empty, and false otherwise.  
+
+- Like in Alloy, the **default quantifier** is `some` (meaning a singleton or a larger set, roughly corresponding to existential quantification).  `Some` is inserted everywhere in front of sets, where a Boolean value is expected; this is why our constraints in the first part looked like propositional, despite operating on sets.
+
+- Having introduced the basic type of tracks, we now refine it to four subtypes, which we will later instantiate to build stations. Simple tracks are straight line tracks, with two connection endpoints.  
+
+- The `#` symbol is a **set cardinality operator**:
+
+```clafer
+abstract SimpleTrack :Track
+   [ #incident = 2 ]
+```
+
+- A junction is a track with three endpoints:
+
+```clafer
+abstract Junction: Track
+   [ #incident = 3 ]
+```
+
+- An incoming or outgoing line will only have one endpoint (the other of its ends is irrelevant for modeling the station):
+
+```clafer
+abstract Line :Track
+   [ one incident ]
+```
+
+- Note that `one` is another quantifier. It results in true iff the subsequent set is a singleton.  
+
+- A track barrier is a kind of track that is blind (or allows to close an open track safely):
+
+```clafer
+abstract TrackBarrier :Track
+   [ one incident ]
+```
+
+- Instantiate this meta-model creating a domain specific model of a station (or more precisely an abstract syntax of it) :
+
+```clafer
+I1 :Line
+T1 :SimpleTrack
+    [I1 ++ O2 = incident]
+O2 :Line
+```
+- In our model we have one incoming line (`I1`), one outgoing line (`I2`) and one simple track (`T1`) which is connected to the two lines.  This is a very common case of a single track rural station.
+
+- the `++` operator denotes set union.
+
+- Since we could always make a mistake, it is useful to ask the Clafer instance generator, to check whether this model is consistent.  It should return exactly one instance, as the model is fully specified (no variability).
+
+```{.clafer .ide}
+```
+
+**Task 6**
+
+- Now once you have the model opened in Clafer IDE change it to a model of an even simpler station that has one incoming track and is blind on the other side. Like the following beatiful station in Rabka, which I visited during a recent summer hike:
+
+![The train station in Rabka (there is only a barrier in the other direction)](/rabka.jpg)
+
+- Remember to use the instance generator to see whether your design is consistent with the meta-model.
+
+
+With this super simple DSL we can move to ![next](/next.png) Part III [Base Model]().
+
+<hr>
+**Previous**
+<hr>
+
+1. [Commonality]()
+2. [Variability]()
+3. [Do not Repeat Yourself]()
+4. [Domain Constraints]()
