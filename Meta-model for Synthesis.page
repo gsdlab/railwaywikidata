@@ -1,0 +1,92 @@
+- We will now create a meta-model that contains **more domain knowledge** than our previous meta-model.  We will connect it to the feature model and use a model finder to **explore** the station design space.  
+
+- This part of the tutorial is very open-ended. It aims to demonstrate that for complex domains, it may be interesting to **synthesize** the implementations or designs using a solver (as opposed to implementing them in detail, as shown in the previous part of the tutorial).
+
+- The synthesis often has **more than one possible** results.  Some of these might be invalid, if the domain specification is imprecise (describing all domain constraints may be very difficult). Ultimately, if cost measures are known, it is useful to extend the domain models with cost, and use the cost as another factor in selecting results of the synthesis (not shown in this tutorial).
+
+- We start by recalling the base meta-model:
+
+```clafer
+abstract Track
+    incident -> Track 0..3
+        [ parent in this.incident ]
+    [ no (this & incident) ]
+
+abstract SimpleTrack :Track
+    [ #incident = 2 ]
+
+abstract Junction: Track
+    [ #incident = 3 ]
+
+abstract Line :Track
+    [ one incident ]
+
+abstract TrackBarrier :Track
+    [ one incident ]
+```
+
+- Now we extend this base meta-model with an explicit concept of `Station` which gathers the elements used in a station and the domain constraints that should be satisfied by any station. We use the same letters for station elements as in the previous part of the tutorial:
+
+```clafer
+abstract Station
+    T :SimpleTrack 1..3
+        [lone (incident & I) ] // a track should not connect more than one inputs
+        [lone (incident & O) ] // (outputs)
+    J :Junction 0..4
+    I :Line 1..2
+    O :Line 0..2
+
+    B :TrackBarrier 0..2
+
+    // a station must be self contained 
+
+    [ T.incident in T ++ J ++ I ++ O ++ B ]
+    [ J.incident in T ++ J ++ I ++ O ]
+    [ I.incident in T ++ J ]
+    [ O.incident in T ++ J ]
+    [ B.incident in T ]
+```
+
+- A station model has to contain a number of elements, similarly to our earlier base model.  But we will specify how these are links more indirectly than before.  First we state that the elements of a station can only be connected to suitable elements of the same station.  Tracks can be incident to anything, junctions cannot be incident to barriers (a blind branch of a junction is redundant, better use a simple track). Incoming and outgoing lines are also not allowed to connect to barriers (as these lines are supposed to reach the main tracks, perhaps via junctions).
+
+- Let's instantiate a station. 
+
+```clafer
+MyStation :Station
+```
+
+**Task 13**
+
+- Investigate some legal stations in Clafer IDE. Stop at the first instance that is 'weird' (the interesting designs appear when you force existence of some junctions, you can do this by adding a constraint, or changing cardinality constraint on `J`):
+
+```{.clafer .ide}
+```
+
+- Creating a model that will describe good solutions may require a lot of work. In many cases, it is not beneficial to get a precise model, but it is better to use cost optimization to select the right instance, skipping the few unrealistic instances that are more optimal. 
+
+**Task 14 (homework)**
+
+- Introduce layout side to incidence relation of tracks, that would allow to model the layout better.  For this consider distinguishing left incoming, and right incoming incident edge in `SimpleTrack`s.  Then make incoming lines left, and outgoing lines right. Generalize Junction type to allow connecting from one left to two right elements, etc.  Then write constraints how different sides can be connect (for instance a simple track should not be allowed to connect to right side, or two left side, elements).
+
+In the next part we will  ![next](/next.png) [Connect the feature model]() to guide the synthesis by selection of features.
+
+<hr>
+**Previous**
+<hr>
+
+Part I
+
+1. [Commonality]()
+2. [Variability]()
+3. [Do not Repeat Yourself]()
+4. [Domain Constraints]()
+
+Part II
+
+5. [Station Building Blocks]()
+
+Part III
+
+6. A [Base Model]()
+2. A [Mapping Model]()
+

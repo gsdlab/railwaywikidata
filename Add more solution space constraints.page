@@ -1,0 +1,90 @@
+- Adding more constraints, will guide the search for interesting solutions further.
+
+- Recall the feature model and meta-model:
+
+```clafer
+abstract xor trackLine
+    single
+    dual
+
+abstract RegionalStationConf
+    main_tracks :trackLine
+    tracks_in  :trackLine
+    tracks_out :trackLine
+    parking_track ?
+
+abstract Track
+    incident -> Track 0..3
+        [ parent in this.incident ]
+    [ no (this & incident) ]
+
+abstract SimpleTrack :Track
+    [ #incident = 2 ]
+
+abstract Junction: Track
+    [ #incident = 3 ]
+
+abstract Line :Track
+    [ one incident ]
+
+abstract TrackBarrier :Track
+    [ one incident ]
+```
+
+- We extend the Station clafer with a few more properties:
+
+```clafer
+abstract Station
+    T :SimpleTrack 1..3
+        [lone (incident & I) ] // a track should not connect more than one inputs
+        [lone (incident & O) ] // (outputs)
+    J :Junction 0..4
+    I :Line 1..2
+    O :Line 0..2
+
+    B :TrackBarrier 0..2
+
+    // a station must be self contained 
+
+    [ T.incident in T ++ J ++ I ++ O ++ B ]
+    [ J.incident in T ++ J ++ I ++ O ]
+    [ I.incident in T ++ J ++ I ++ O ]
+    [ O.incident in T ++ J ++ I ++ O ]
+    [ B.incident in T ]
+
+
+```
+
+
+
+- Let's instantiate a station. 
+
+```clafer
+MyStation :Station
+```
+
+- Investigate some legal stations in Clafer IDE. Stop at the first instance that is 'weird' (it should not take more than three instances normally):
+
+```{.clafer .ide}
+```
+
+It looks like we need to ![next](/next.png) [Add more solution space constraints]()
+
+<hr>
+**Previous**
+<hr>
+
+Part I
+
+1. [Commonality]()
+2. [Variability]()
+3. [Do not Repeat Yourself]()
+4. [Domain Constraints]()
+
+Part II
+
+5. [Station Building Blocks]()
+
+Part III
+
+6. [Base Model]()

@@ -1,0 +1,63 @@
+- We would like to restrict the variability in the domain further. We still admit some weird stations.  It is possible to have dual incoming tracks, and dual outgoing tracks, with a single main track.  
+
+- We decide that this is a rather unusual construction (rather the opposite is more common), and rule it out from our example.  We do it using the **constraint language** of Clafer. We relate subclafers of `main_tracks` to subclafers of `tracks_in` and of `tracks_out`.
+
+```clafer 
+abstract xor trackLine
+    single
+    dual
+
+
+abstract RegionalStationConf
+    main_tracks :trackLine
+    tracks_in  :trackLine
+      [ dual => main_tracks.dual ]
+    tracks_out :trackLine
+      [ this.dual => main_tracks.dual ]
+    parking_track ?
+
+MyConfiguration : RegionalStationConf
+```
+
+- Clafer constraints are written in a **context**. Each constraint is implicitly universally quantified over the instances of the context (for humans: each constraint must hold for each instance of the clafer containing it). This also means that the constraint is ignored if the context clafer is not instantiated.  In the example, the newly added constraints only hold if we have dual incoming or outgoing tracks.
+
+- The keyword `this` can be used to specifically indicate the context clafer of the constraint.  It is sometimes needed for clarity, not so much for technical reasons. Expressions `dual` and `this.dual` are interchangeable in the example above.
+
+- The syntax of the constraint language is 'borrowed' from Alloy (we are not planning to return it, though).
+
+- **Names are resolved** in the current context. So in the above example, `dual` refers to `tracks_in.dual` and `tracks_out.dual`. 
+
+- Non-local names should be **qualified**.  If use unique names in the model, the name resolver will handle many common cases automatically, though.
+
+**Task 4:**
+
+- Let's see the model in the `ClaferConfigurator` again. How many configurations do we have now? Why? Which configurations disappeared? Try to configure a "broken" configuration using the green check boxes to the left of the configuration grid. Recall that we disallowed stations with dual incoming and outgoing tracks, but with a single main track.
+
+```{.clafer .config}
+```
+
+**Task 5:**
+
+- Why is the following instance not legal?
+
+```
+MyConfiguration
+    main_tracks
+       dual
+    tracks_in
+       dual
+    tracks_out
+       dual
+       single
+    parking_track
+```
+
+We are done with feature modeling of stations.  We will now change mode to discussing how stations are constructed. Close the configurator and move to the page ![next](/next.png) Part II [Station Building Blocks]().
+
+<hr>
+**Previous**
+<hr>
+
+1. [Commonality]()
+2. [Variability]()
+2. [Do not Repeat Yourself]()

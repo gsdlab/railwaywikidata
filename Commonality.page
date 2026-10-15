@@ -1,0 +1,56 @@
+---
+toc: false
+...
+
+Part I
+======
+
+- We will model a domain of small regional train stations, restricting our attention to track layouts. 
+
+- Let's start with commonalities among the different train stations.  Each regional station has some **main tracks**, and some **incoming** and **outgoing** tracks, connecting it to the main line system.
+
+```clafer
+abstract RegionalStationConf
+    main_tracks 1..1 // a cardinality constraint 1..1 following a clafer restricts the number of its instances
+    tracks_in 1         // 1..1 is written 1 in short
+    tracks_out          // 1 is default, so it can be omitted
+```
+
+- A Clafer model is built predominantly from 'clafers' (which assume the roles of classes, objects, features, and associations). We write 'Clafer' for the language and 'clafer' referring to these building entities. 
+
+- Every line declares a new `clafer`, which represents a concept or a property. 
+The clafers are nested using indentation (`main_tracks` is a child clafer of `RegionalStationConf`, and so are `tracks_in` and `tracks_out`). 
+
+
+- Each clafer is followed by a 'clafer cardinality' constraint, which restricts the allowed number of its instances: 
+in general, the cardinality is an interval `n..m`, where `m` can be `*` to indicate unboundedness.  
+
+- In general clafer constraints are interpreted in the instance of the context (parent clafer), so the restriction that there must be exactly one instance of main tracks, holds for each instance of `RegionalStationConf` separately.
+
+- Convenience notation: 
+    + `m..m` simplifies to `m` (so `1..1` simplifies to `1`), 
+    + `0..1` simplifies to `?` 
+    + and `0..*` to `*`
+
+- For clafers that are not parts of groups (see about groups later), the default cardinality constraint is `1` and can be omitted for brevity. See `tracks_out`; in fact all subclafers of `RegionalStationConf` have the same cardinality constraint, just written using alternative notations.
+
+- A clafer instance can exist only when its parent clafer's instance exists (e.g., instance of `main_tracks` cannot exist without an instance of `RegionalStationConf`).
+
+- Clafers with cardinality `1..1` (or equivalently `1`) are called 'mandatory' and are used typically to represent **commonality**.
+
+- `abstract` is a keyword indicating that we are introducing a type without any instances (yet).  The type can be instantiated either by omitting `abstract` or as follows:
+
+```clafer
+MyConfiguration :RegionalStationConf 1 // 1 could have been omitted
+```
+
+- What are the **model instances**? In our case, we can interpret our `model` as a description of variability across all small train stations, so different configurations of stations will be instances. Since all clafers in our model are mandatory, there is only a single instance of our model (i.e., there is actually no variability yet). This one configuration has one instance of `main_tracks`, one of `tracks_in` and one of `tracks_out`.
+
+- Let's use the tool `ClaferIDE` to generate the instance.
+
+```{.clafer .ide}
+```
+
+- **Task 1:** Press the button to open the model from this page in the IDE and press the button `Run` in the `Instance Generator` window. Then press the button `Next` to generate another instance and see what happens.
+
+Close the IDE and move to the page ![next](/next.png) [Variability]().
